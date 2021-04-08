@@ -1,7 +1,5 @@
-import { useQuery, gql } from '@apollo/client';
-
 import Link from 'next/link';
-
+import { gql } from '@apollo/client';
 import {
   Card,
   CardBody,
@@ -12,7 +10,7 @@ import {
   Col,
 } from 'reactstrap';
 
-const QUERY = gql`
+export const RESTAURANTS_QUERY = gql`
   {
     restaurants {
       id
@@ -27,16 +25,12 @@ const QUERY = gql`
 
 type Props = {
   search?: string;
+  restaurants: any;
 };
 
-function RestaurantList({ search }: Props) {
-  const { loading, error, data } = useQuery(QUERY);
-  if (error) return <p>Error loading restaurants</p>;
-  if (loading) return <h1>Fetching...</h1>;
-
-  if (data.restaurants && data.restaurants.length) {
-    //searchQuery
-    const searchQuery = data.restaurants.filter((r) =>
+function RestaurantList({ search, restaurants }: Props) {
+  if (restaurants && restaurants.length) {
+    const searchQuery = restaurants.filter((r) =>
       r.name.toLowerCase().includes(search)
     );
 
@@ -56,10 +50,7 @@ function RestaurantList({ search }: Props) {
                   <CardText>{res.description}</CardText>
                 </CardBody>
                 <div className='card-footer'>
-                  <Link
-                    as={`/restaurants/${res.id}`}
-                    href={`/restaurants?id=${res.id}`}
-                  >
+                  <Link href={`/restaurants/${res.id}/dishes`}>
                     <a className='btn btn-primary'>View</a>
                   </Link>
                 </div>

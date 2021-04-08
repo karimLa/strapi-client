@@ -1,45 +1,20 @@
-import { useState } from 'react';
-import Head from 'next/head';
-import { Col, Input, InputGroup, InputGroupAddon, Row } from 'reactstrap';
+import { GetStaticProps } from 'next';
 
-import RestaurantList from '@/components/Restaurants';
+import { addApolloState, initializeApollo } from '@/lib/apolloClient';
+import { RESTAURANTS_QUERY } from '@/components/Restaurants';
+export { default } from './restaurants';
 
-export default function Home() {
-  const [query, updateQuery] = useState('');
+export const getStaticProps: GetStaticProps = async () => {
+  const apolloClient = initializeApollo();
 
-  return (
-    <div>
-      <Head>
-        <title>Shokuji</title>
-        <link rel='icon' href='/favicon.ico' />
-      </Head>
+  const { data } = await apolloClient.query({
+    query: RESTAURANTS_QUERY,
+  });
 
-      <main className='container-fluid'>
-        <Row>
-          <Col>
-            <div className='search'>
-              <InputGroup>
-                <InputGroupAddon addonType='append'> Search </InputGroupAddon>
-                <Input
-                  onChange={(e) =>
-                    updateQuery(e.target.value.toLocaleLowerCase())
-                  }
-                  value={query}
-                />
-              </InputGroup>
-            </div>
-            <RestaurantList search={query} />
-          </Col>
-        </Row>
-        <style jsx>
-          {`
-            .search {
-              margin: 20px;
-              width: 500px;
-            }
-          `}
-        </style>
-      </main>
-    </div>
-  );
-}
+  return addApolloState(apolloClient, {
+    props: {
+      restaurants: data.restaurants,
+    },
+    revalidate: 1,
+  });
+};
