@@ -1,9 +1,11 @@
 import { useMemo } from 'react';
 import { ApolloClient, ApolloLink, InMemoryCache, NormalizedCacheObject } from '@apollo/client';
 import { onError } from "@apollo/client/link/error";
+import { setContext } from '@apollo/client/link/context';
 import { createUploadLink } from 'apollo-upload-client';
 import merge from 'deepmerge'
 import isEqual from 'lodash/isEqual'
+import Cookies from 'js-cookie';
 
 import { getEndpoint } from '@/utils/env';
 
@@ -11,11 +13,24 @@ export const APOLLO_STATE_PROP_NAME = '__APOLLO_STATE__'
 
 let apolloClient: ApolloClient<NormalizedCacheObject> | null;
 
+const authLink = setContext((_, { headers }) => {
+	// get the authentication token from local storage if it exists
+	const token = Cookies.get('token');
+	// return the headers to the context so httpLink can read them
+	return {
+		headers: {
+			...headers,
+			authorization: token ? `Bearer ${token}` : "",
+		}
+	}
+});
+
 function createApolloClient() {
 	return new ApolloClient({
 		ssrMode: typeof window === 'undefined',
 		credentials: 'include',
 		link: ApolloLink.from([
+			authLink,
 			onError(({ graphQLErrors, networkError }) => {
 				if (graphQLErrors)
 					graphQLErrors.forEach(({ message, locations, path }) =>

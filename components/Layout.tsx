@@ -1,16 +1,20 @@
-import Head from "next/head";
-import Link from "next/link";
-import { Container, Nav, NavItem } from "reactstrap";
+import Head from 'next/head';
+import Link from 'next/link';
+import { Container, Nav, NavItem } from 'reactstrap';
 
-export default function Layout(props) {
-  const title = "Welcome to Nextjs";
+import useUser, { logout } from '@/lib/useUser';
+
+export default function Layout({ children }) {
+  const user = useUser();
+  const title = 'Welcome to Nextjs';
+
   return (
     <div>
       <Head>
         <title>{title}</title>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
-        <script src="https://js.stripe.com/v3" />
+        <meta charSet='utf-8' />
+        <meta name='viewport' content='initial-scale=1.0, width=device-width' />
+        <script src='https://js.stripe.com/v3' />
       </Head>
       <header>
         <style jsx>
@@ -20,27 +24,38 @@ export default function Layout(props) {
             }
           `}
         </style>
-        <Nav className="navbar navbar-dark bg-dark">
+        <Nav className='navbar navbar-dark bg-dark'>
           <NavItem>
-            <Link href="/">
-              <a className="navbar-brand">Home</a>
+            <Link href='/'>
+              <a className='navbar-brand'>Home</a>
             </Link>
           </NavItem>
 
-          <NavItem className="ml-auto">
-            <Link href="/login">
-              <a className="nav-link">Sign In</a>
-            </Link>
+          <NavItem className='ml-auto'>
+            {user ? (
+              <h5>{user.username}</h5>
+            ) : (
+              <Link href='/register'>
+                <a className='nav-link'> Sign up</a>
+              </Link>
+            )}
           </NavItem>
-
           <NavItem>
-            <Link href="/register">
-              <a className="nav-link"> Sign Up</a>
-            </Link>
+            {user ? (
+              <Link href='/'>
+                <a className='nav-link' onClick={() => logout()}>
+                  Logout
+                </a>
+              </Link>
+            ) : (
+              <Link href='/login'>
+                <a className='nav-link'>Sign in</a>
+              </Link>
+            )}
           </NavItem>
         </Nav>
       </header>
-      <Container>{props.children}</Container>
+      <Container>{children}</Container>
     </div>
   );
 }
